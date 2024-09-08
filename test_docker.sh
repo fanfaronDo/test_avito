@@ -1,0 +1,21 @@
+#!/bin/bash
+
+SERVER_ADDRESS="0.0.0.0:8080"
+POSTGRES_CONN="host=your_host user=your_user password=your_password dbname=your_db sslmode=disable"
+POSTGRES_JDBC_URL="jdbc:postgresql://your_host:your_port/your_db"
+POSTGRES_USERNAME="your_user"
+POSTGRES_PASSWORD="your_password"
+POSTGRES_HOST=""
+POSTGRES_PORT="5432"
+POSTGRES_DATABASE=""
+
+docker run \
+  -e SERVER_ADDRESS="$SERVER_ADDRESS" \
+  -e POSTGRES_CONN="$POSTGRES_CONN" \
+  -e POSTGRES_JDBC_URL="$POSTGRES_JDBC_URL" \
+  -e POSTGRES_USERNAME="$POSTGRES_USERNAME" \
+  -e POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
+  -e POSTGRES_HOST="$POSTGRES_HOST" \
+  -e POSTGRES_PORT="$POSTGRES_PORT" \
+  -e POSTGRES_DATABASE="$POSTGRES_DATABASE" \
+  avito
