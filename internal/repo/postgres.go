@@ -2,7 +2,7 @@ package repo
 
 import (
 	"database/sql"
-	"git.codenrock.com/avito-testirovanie-na-backend-1270/cnrprod1725728915-team-77162/zadanie-6105/internal/config"
+	"github.com/fanfaronDo/test_avito/internal/config"
 	_ "github.com/lib/pq"
 )
 
