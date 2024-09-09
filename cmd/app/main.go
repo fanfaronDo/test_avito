@@ -18,5 +18,6 @@ func main() {
 		log.Fatal(err)
 		os.Exit(1)
 	}
+
 	app.Run(cfg)
 }
