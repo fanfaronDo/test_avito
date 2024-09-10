@@ -22,6 +22,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		tenders := api.Group("/tenders")
 		{
 			tenders.GET("/", h.getTenders)
+			tenders.POST("/new", h.createTender)
 		}
 	}
 

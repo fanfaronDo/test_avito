@@ -78,7 +78,7 @@ func (t *TenderRepo) GetTenders(limit, offset int, serviceType string) ([]domain
        				service_type, status, 
        				organization_id, creator_id, 
        				version, created_at, updated_at 
-			  FROM tenders;`
+			  FROM tenders`
 
 	params := []interface{}{}
 	paramsIndex := 1
