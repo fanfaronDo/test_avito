@@ -3,7 +3,7 @@ package repo
 import (
 	"context"
 	"database/sql"
-	"fmt"
+	log "github.com/sirupsen/logrus"
 )
 
 type AuthRepo struct {
@@ -24,8 +24,22 @@ func (a *AuthRepo) GetUserUUIDCharge(username, organisation_id string) (string, 
 	defer cancelFn()
 	err := a.db.QueryRowContext(ctx, query, username, organisation_id).Scan(&uuid)
 	if err != nil {
-		return "", fmt.Errorf("Error %s when checking user charge", err)
+		log.Fatalf("%s: %v", ErrUserChargeNotFound, err)
+		return "", ErrUserChargeNotFound
 	}
 
+	return uuid, nil
+}
+
+func (a *AuthRepo) GetUserUUID(username string) (string, error) {
+	var uuid string
+	ctx, cancelFn := context.WithTimeout(context.Background(), timeuotCtx)
+	defer cancelFn()
+	query := `SELECT id FROM employee WHERE username = $1;`
+	err := a.db.QueryRowContext(ctx, query, username).Scan(&uuid)
+	if err != nil {
+		log.Fatalf("%s: %v", ErrUserNotFound, err)
+		return "", ErrUserNotFound
+	}
 	return uuid, nil
 }

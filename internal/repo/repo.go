@@ -7,10 +7,15 @@ import (
 
 type Auth interface {
 	GetUserUUIDCharge(username, organisation_id string) (string, error)
+	GetUserUUID(username string) (string, error)
 }
 
 type Tender interface {
 	CreateTender(tender domain.Tender) (domain.Tender, error)
+	GetTenders(limit, offset int, serviceType string) ([]domain.Tender, error)
+	GetTendersByUserID(limit, offset int, uuid string) ([]domain.Tender, error)
+	GetStatusTenderById(tenderUUID, userUUID string) (string, error)
+	UpdateStatusTenderById(tenderUUID, status, userUUID string) (domain.Tender, error)
 }
 
 type Repository struct {
@@ -18,8 +23,8 @@ type Repository struct {
 	Tender
 }
 
-func NewRepository(db *sql.DB) Repository {
-	return Repository{
+func NewRepository(db *sql.DB) *Repository {
+	return &Repository{
 		Tender: NewTenderRepo(db),
 		Auth:   NewAuthRepo(db),
 	}
