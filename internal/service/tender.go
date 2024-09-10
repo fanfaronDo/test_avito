@@ -2,7 +2,6 @@ package service
 
 import (
 	"github.com/fanfaronDo/test_avito/internal/domain"
-	"github.com/fanfaronDo/test_avito/internal/handler"
 	"github.com/fanfaronDo/test_avito/internal/repo"
 	"time"
 )
@@ -19,7 +18,7 @@ func NewTenderService(repo *repo.Repository) *TenderService {
 	return &TenderService{repo: repo}
 }
 
-func (t *TenderService) CreateTender(tenderCreator handler.TenderCreator, uuid string) (domain.Tender, error) {
+func (t *TenderService) CreateTender(tenderCreator domain.TenderCreator, uuid string) (domain.Tender, error) {
 	if !checkStatus(tenderCreator.Status) {
 		return domain.Tender{}, ErrStatusError
 	}
@@ -65,7 +64,7 @@ func (t *TenderService) UpdateStatusTender(tenderUUID, status, username string) 
 	return t.repo.UpdateStatusTenderById(tenderUUID, status, uuid)
 }
 
-func (t *TenderService) EditTender(tenderUUID, username string, tenderEditor *handler.TenderEditor) (domain.Tender, error) {
+func (t *TenderService) EditTender(tenderUUID, username string, tenderEditor *domain.TenderEditor) (domain.Tender, error) {
 	if tenderEditor == nil {
 		return t.repo.GetTenderById(tenderUUID)
 	}
@@ -80,7 +79,7 @@ func (t *TenderService) EditTender(tenderUUID, username string, tenderEditor *ha
 	return t.repo.UpdateTender(tenderUUID, uuid, tenderEditor)
 }
 
-func (t *TenderService) initTender(creator handler.TenderCreator, uuid string) domain.Tender {
+func (t *TenderService) initTender(creator domain.TenderCreator, uuid string) domain.Tender {
 	return domain.Tender{
 		Name:           creator.Name,
 		Description:    creator.Description,

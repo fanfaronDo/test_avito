@@ -1,16 +1,33 @@
 package handler
 
-type TenderCreator struct {
-	Name            string `json:"name"`
-	Description     string `json:"description"`
-	ServiceType     string `json:"serviceType"`
-	Status          string `json:"status"`
-	OrganizationID  string `json:"organizationId"`
-	CreatorUsername string `json:"creatorUsername"`
+import (
+	"github.com/fanfaronDo/test_avito/internal/service"
+	"github.com/gin-gonic/gin"
+	"net/http"
+)
+
+type Handler struct {
+	service *service.Service
 }
 
-type TenderEditor struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	ServiceType string `json:"serviceType"`
+func NewHandler(service *service.Service) *Handler {
+	return &Handler{service: service}
+}
+
+func (h *Handler) InitRoutes() *gin.Engine {
+	router := gin.New()
+	api := router.Group("/api")
+	{
+		api.GET("/ping", ping)
+		tenders := api.Group("/tenders")
+		{
+			tenders.GET("/", h.getTenders)
+		}
+	}
+
+	return router
+}
+
+func ping(c *gin.Context) {
+	c.String(http.StatusOK, "ok")
 }

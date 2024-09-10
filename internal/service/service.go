@@ -2,7 +2,6 @@ package service
 
 import (
 	"github.com/fanfaronDo/test_avito/internal/domain"
-	"github.com/fanfaronDo/test_avito/internal/handler"
 	"github.com/fanfaronDo/test_avito/internal/repo"
 )
 
@@ -11,12 +10,12 @@ type Auth interface {
 }
 
 type Tender interface {
-	CreateTender(tenderCreator handler.TenderCreator, uuid string) (domain.Tender, error)
+	CreateTender(tenderCreator domain.TenderCreator, uuid string) (domain.Tender, error)
 	GetTenders(limit, offset int, serviceType string) ([]domain.Tender, error)
 	GetTendersByUsername(limit, offset int, username string) ([]domain.Tender, error)
 	GetStatusTenderByTenderID(tenderID, username string) (string, error)
 	UpdateStatusTender(tenderUUID, status, username string) (domain.Tender, error)
-	EditTender(tenderUUID, username string, tenderEditor *handler.TenderEditor) (domain.Tender, error)
+	EditTender(tenderUUID, username string, tenderEditor *domain.TenderEditor) (domain.Tender, error)
 }
 
 type Service struct {

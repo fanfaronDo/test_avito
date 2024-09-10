@@ -3,10 +3,15 @@ package app
 import (
 	"fmt"
 	"github.com/fanfaronDo/test_avito/internal/config"
+	"github.com/fanfaronDo/test_avito/internal/domain"
 	"github.com/fanfaronDo/test_avito/internal/handler"
 	"github.com/fanfaronDo/test_avito/internal/repo"
 	"github.com/fanfaronDo/test_avito/internal/service"
+	"github.com/fanfaronDo/test_avito/pkg/server"
 	log "github.com/sirupsen/logrus"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 var (
@@ -25,9 +30,30 @@ func Run(cfg *config.Config) {
 		log.Printf("%v\n", err)
 		return
 	}
-	r := repo.NewRepository(conn)
+	repos := repo.NewRepository(conn)
+	services := service.NewService(repos)
+	handler := handler.NewHandler(services)
+	route := handler.InitRoutes()
+	server := server.Server{}
+	//testFunc(services)
 
-	s := service.NewService(r)
+	go func() {
+		if err = server.Run(cfg.HttpServer, route); err != nil {
+			log.Printf("Failed to start server: %v", err)
+			return
+		}
+	}()
+
+	defer server.Shutdown(nil)
+	log.Printf("Server started on %s\n", "http://"+cfg.Address)
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("Shutdown Server ...")
+
+}
+
+func testFunc(s *service.Service) {
 	//tender := handler.TenderCreator{
 	//	Name:            "Newadad",
 	//	Description:     "Description wkhgfyhof the new tender",
@@ -49,7 +75,7 @@ func Run(cfg *config.Config) {
 	//} else {
 	//	fmt.Println("User Charge was not successful")
 	//}
-	test := handler.TenderEditor{
+	test := domain.TenderEditor{
 		Name:        "NewName2",
 		Description: "NewDescription2",
 		ServiceType: "Delivery",

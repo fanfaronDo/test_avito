@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"github.com/fanfaronDo/test_avito/internal/domain"
-	"github.com/fanfaronDo/test_avito/internal/handler"
 	log "github.com/sirupsen/logrus"
 	"strconv"
 	"time"
@@ -235,7 +234,7 @@ func (t *TenderRepo) UpdateStatusTenderById(tenderUUID, status, userUUID string)
 	return tender, nil
 }
 
-func (t *TenderRepo) UpdateTender(tenderUUID, userUUID string, tenderEditor *handler.TenderEditor) (domain.Tender, error) {
+func (t *TenderRepo) UpdateTender(tenderUUID, userUUID string, tenderEditor *domain.TenderEditor) (domain.Tender, error) {
 	var tender domain.Tender
 	tx, err := t.db.Begin()
 	if err != nil {
