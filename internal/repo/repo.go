@@ -3,6 +3,7 @@ package repo
 import (
 	"database/sql"
 	"github.com/fanfaronDo/test_avito/internal/domain"
+	"github.com/fanfaronDo/test_avito/internal/handler"
 )
 
 type Auth interface {
@@ -16,6 +17,8 @@ type Tender interface {
 	GetTendersByUserID(limit, offset int, uuid string) ([]domain.Tender, error)
 	GetStatusTenderById(tenderUUID, userUUID string) (string, error)
 	UpdateStatusTenderById(tenderUUID, status, userUUID string) (domain.Tender, error)
+	UpdateTender(tenderUUID, userUUID string, tenderEditor *handler.TenderEditor) (domain.Tender, error)
+	GetTenderById(tenderUUID string) (domain.Tender, error)
 }
 
 type Repository struct {

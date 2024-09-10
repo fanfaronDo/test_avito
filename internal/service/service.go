@@ -16,6 +16,7 @@ type Tender interface {
 	GetTendersByUsername(limit, offset int, username string) ([]domain.Tender, error)
 	GetStatusTenderByTenderID(tenderID, username string) (string, error)
 	UpdateStatusTender(tenderUUID, status, username string) (domain.Tender, error)
+	EditTender(tenderUUID, username string, tenderEditor *handler.TenderEditor) (domain.Tender, error)
 }
 
 type Service struct {

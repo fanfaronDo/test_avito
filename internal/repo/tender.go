@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"github.com/fanfaronDo/test_avito/internal/domain"
+	"github.com/fanfaronDo/test_avito/internal/handler"
 	log "github.com/sirupsen/logrus"
 	"strconv"
 	"time"
@@ -37,10 +38,37 @@ func (t *TenderRepo) CreateTender(tender domain.Tender) (domain.Tender, error) {
 		tender.Version).Scan(&uuid)
 
 	if err != nil {
-		log.Fatalf("%s: %v", ErrCreationTender, err)
+		log.Debugf("%s: %v", ErrCreationTender, err)
 		return domain.Tender{}, ErrCreationTender
 	}
 	tender.ID = uuid
+	return tender, nil
+}
+
+func (t *TenderRepo) GetTenderById(tenderUUID string) (domain.Tender, error) {
+	var tender domain.Tender
+	query := `SELECT id, name, description, 
+       				service_type, status, 
+       				organization_id, creator_id, 
+       				version, created_at, updated_at 
+			  FROM tenders WHERE id = $1;`
+
+	ctx, cancelFn := context.WithTimeout(context.Background(), timeuotCtx)
+	defer cancelFn()
+	err := t.db.QueryRowContext(ctx, query, tenderUUID).Scan(&tender.ID,
+		&tender.Name,
+		&tender.Description,
+		&tender.ServiceType,
+		&tender.Status,
+		&tender.OrganizationID,
+		&tender.CreatorID,
+		&tender.Version,
+		&tender.CreatedAt,
+		&tender.UpdatedAt)
+	if err != nil {
+		return domain.Tender{}, ErrTenderNotFound
+	}
+
 	return tender, nil
 }
 
@@ -68,7 +96,7 @@ func (t *TenderRepo) GetTenders(limit, offset int, serviceType string) ([]domain
 	defer cancelFn()
 	rows, err := t.db.QueryContext(ctx, query, params...)
 	if err != nil {
-		log.Fatalf("%s: %v", ErrTenderNotFound, err)
+		log.Debugf("%s: %v", ErrTenderNotFound, err)
 		return []domain.Tender{}, ErrTenderNotFound
 	}
 
@@ -87,7 +115,7 @@ func (t *TenderRepo) GetTenders(limit, offset int, serviceType string) ([]domain
 			&tender.UpdatedAt)
 
 		if err != nil {
-			log.Fatalf("%s: %v", ErrScanDataTender, err)
+			log.Debugf("%s: %v", ErrScanDataTender, err)
 			return []domain.Tender{}, ErrScanDataTender
 		}
 		tenders = append(tenders, tender)
@@ -107,7 +135,7 @@ func (t *TenderRepo) GetTendersByUserID(limit, offset int, uuid string) ([]domai
 	defer cancelFn()
 	rows, err := t.db.QueryContext(ctx, query, uuid, limit, offset)
 	if err != nil {
-		log.Fatalf("%s: %v", ErrTenderNotFound, err)
+		log.Debugf("%s: %v", ErrTenderNotFound, err)
 		return []domain.Tender{}, ErrTenderNotFound
 	}
 	defer rows.Close()
@@ -126,7 +154,7 @@ func (t *TenderRepo) GetTendersByUserID(limit, offset int, uuid string) ([]domai
 			&tender.UpdatedAt)
 
 		if err != nil {
-			log.Fatalf("%s: %v", ErrScanDataTender, err)
+			log.Debugf("%s: %v", ErrScanDataTender, err)
 			return []domain.Tender{}, ErrScanDataTender
 		}
 		tenders = append(tenders, tender)
@@ -157,7 +185,7 @@ func (t *TenderRepo) UpdateStatusTenderById(tenderUUID, status, userUUID string)
 	var tender domain.Tender
 	tx, err := t.db.Begin()
 	if err != nil {
-		log.Fatalf("%s: %v", ErrInFailedTransaction, err)
+		log.Debugf("%s: %v", ErrInFailedTransaction, err)
 		return domain.Tender{}, ErrInFailedTransaction
 	}
 	ctx, cancelFn := context.WithTimeout(context.Background(), timeuotCtx)
@@ -167,7 +195,7 @@ func (t *TenderRepo) UpdateStatusTenderById(tenderUUID, status, userUUID string)
 	_, err = tx.ExecContext(ctx, updateStatusQuery, status, userUUID, tenderUUID)
 	if err != nil {
 		tx.Rollback()
-		log.Fatalf("%s: %v", ErrUpdatedTender, err)
+		log.Debugf("%s: %v", ErrUpdatedTender, err)
 		return domain.Tender{}, ErrUpdatedTender
 	}
 
@@ -192,64 +220,78 @@ func (t *TenderRepo) UpdateStatusTenderById(tenderUUID, status, userUUID string)
 	if err != nil {
 		tx.Rollback()
 		if err == sql.ErrNoRows {
-			log.Fatalf("%s: %v", ErrTenderNotFound, err)
+			log.Debugf("%s: %v", ErrTenderNotFound, err)
 			return domain.Tender{}, ErrTenderNotFound
 		}
-		log.Fatalf("%s: %v", ErrFetchingTender, err)
+		log.Debugf("%s: %v", ErrFetchingTender, err)
 		return domain.Tender{}, ErrFetchingTender
 	}
 
 	if err := tx.Commit(); err != nil {
-		log.Fatalf("%s: %v", ErrCommittingTransaction, err)
+		log.Debugf("%s: %v", ErrCommittingTransaction, err)
 		return domain.Tender{}, ErrCommittingTransaction
 	}
 
 	return tender, nil
 }
 
-//func (t *TenderRepo) UpdateStatusTenderById(tenderUUID, status, userUUID string) (domain.Tender, error) {
-//	var tender domain.Tender
-//	tx, err := t.db.Begin()
-//	if err != nil {
-//		log.Fatalf("%s: %v", ErrInFailedTransaction, err)
-//		return domain.Tender{}, ErrInFailedTransaction
-//	}
-//	ctx, cancelFn := context.WithTimeout(context.Background(), timeuotCtx)
-//	defer cancelFn()
-//
-//	updateStatusQuery := `UPDATE tenders SET status = $1 WHERE creator_id = $2 AND id = $3;`
-//	err = tx.QueryRowContext(ctx, updateStatusQuery, status, userUUID, tenderUUID).Err()
-//	if err != nil {
-//		tx.Rollback()
-//		log.Fatalf("%s: %v", ErrUpdatedTender, err)
-//		return domain.Tender{}, ErrUpdatedTender
-//	}
-//
-//	getTenderByIdQuery := `SELECT id, name, description,
-//       				service_type, status,
-//       				organization_id, creator_id,
-//       				version, created_at, updated_at
-//				FROM tenders WHERE id = $1;`
-//
-//	row := t.db.QueryRowContext(ctx, getTenderByIdQuery, tenderUUID)
-//	err = row.Scan(&tender.ID,
-//		&tender.Name,
-//		&tender.Description,
-//		&tender.ServiceType,
-//		&tender.Status,
-//		&tender.OrganizationID,
-//		&tender.CreatorID,
-//		&tender.Version,
-//		&tender.CreatedAt,
-//		&tender.UpdatedAt)
-//
-//	if err != nil {
-//		tx.Rollback()
-//		log.Printf("%s: %v", ErrScanDataTender, err)
-//		return domain.Tender{}, ErrScanDataTender
-//	}
-//
-//	tx.Commit()
-//
-//	return tender, nil
-//}
+func (t *TenderRepo) UpdateTender(tenderUUID, userUUID string, tenderEditor *handler.TenderEditor) (domain.Tender, error) {
+	var tender domain.Tender
+	tx, err := t.db.Begin()
+	if err != nil {
+		log.Debugf("%s: %v", ErrInFailedTransaction, err)
+		return domain.Tender{}, ErrInFailedTransaction
+	}
+	ctx, cancelFn := context.WithTimeout(context.Background(), timeuotCtx)
+	defer cancelFn()
+
+	updateStatusQuery := `UPDATE tenders SET name = $1, description = $2, service_type = $3, version = COALESCE((SELECT MAX(version) FROM tenders WHERE id = $4), 0) + 1 
+               WHERE creator_id = $5 AND id = $6;`
+	_, err = tx.ExecContext(ctx,
+		updateStatusQuery, tenderEditor.Name,
+		tenderEditor.Description,
+		tenderEditor.ServiceType,
+		tenderUUID,
+		userUUID, tenderUUID)
+
+	if err != nil {
+		tx.Rollback()
+		log.Debugf("%s: %v", ErrTenderNotFound, err)
+		return domain.Tender{}, ErrTenderNotFound
+	}
+
+	getTenderByIdQuery := `SELECT id, name, description, 
+        service_type, status, 
+        organization_id, creator_id, 
+        version, created_at, updated_at 
+        FROM tenders WHERE id = $1;`
+
+	err = tx.QueryRowContext(ctx, getTenderByIdQuery, tenderUUID).Scan(
+		&tender.ID,
+		&tender.Name,
+		&tender.Description,
+		&tender.ServiceType,
+		&tender.Status,
+		&tender.OrganizationID,
+		&tender.CreatorID,
+		&tender.Version,
+		&tender.CreatedAt,
+		&tender.UpdatedAt,
+	)
+	if err != nil {
+		tx.Rollback()
+		if err == sql.ErrNoRows {
+			log.Debugf("%s: %v", ErrTenderNotFound, err)
+			return domain.Tender{}, ErrTenderNotFound
+		}
+		log.Debugf("%s: %v", ErrFetchingTender, err)
+		return domain.Tender{}, ErrFetchingTender
+	}
+
+	if err := tx.Commit(); err != nil {
+		log.Debugf("%s: %v", ErrCommittingTransaction, err)
+		return domain.Tender{}, ErrCommittingTransaction
+	}
+
+	return tender, nil
+}

@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	"github.com/fanfaronDo/test_avito/internal/config"
+	"github.com/fanfaronDo/test_avito/internal/handler"
 	"github.com/fanfaronDo/test_avito/internal/repo"
 	"github.com/fanfaronDo/test_avito/internal/service"
 	log "github.com/sirupsen/logrus"
@@ -48,7 +49,12 @@ func Run(cfg *config.Config) {
 	//} else {
 	//	fmt.Println("User Charge was not successful")
 	//}
+	test := handler.TenderEditor{
+		Name:        "NewName2",
+		Description: "NewDescription2",
+		ServiceType: "Delivery",
+	}
 
-	res, err := s.Tender.UpdateStatusTender("f24f2125-d0c0-487c-aedd-485e38dc70d0", "Published", "john_doe")
+	res, err := s.Tender.EditTender("f24f2125-d0c0-487c-aedd-485e38dc70d0", "john_doe", &test)
 	fmt.Println(res, err)
 }

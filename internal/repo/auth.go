@@ -24,7 +24,7 @@ func (a *AuthRepo) GetUserUUIDCharge(username, organisation_id string) (string, 
 	defer cancelFn()
 	err := a.db.QueryRowContext(ctx, query, username, organisation_id).Scan(&uuid)
 	if err != nil {
-		log.Fatalf("%s: %v", ErrUserChargeNotFound, err)
+		log.Debugf("%s: %v", ErrUserChargeNotFound, err)
 		return "", ErrUserChargeNotFound
 	}
 
@@ -38,7 +38,7 @@ func (a *AuthRepo) GetUserUUID(username string) (string, error) {
 	query := `SELECT id FROM employee WHERE username = $1;`
 	err := a.db.QueryRowContext(ctx, query, username).Scan(&uuid)
 	if err != nil {
-		log.Fatalf("%s: %v", ErrUserNotFound, err)
+		log.Debugf("%s: %v", ErrUserNotFound, err)
 		return "", ErrUserNotFound
 	}
 	return uuid, nil
