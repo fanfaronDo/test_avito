@@ -18,6 +18,7 @@ type Tender interface {
 	UpdateStatusTenderById(tenderUUID, status, userUUID string) (domain.Tender, error)
 	UpdateTender(tenderUUID, userUUID string, tenderEditor *domain.TenderEditor) (domain.Tender, error)
 	GetTenderById(tenderUUID string) (domain.Tender, error)
+	RollbackTender(tenderUUID, userUUID string, version int) (domain.Tender, error)
 }
 
 type Repository struct {

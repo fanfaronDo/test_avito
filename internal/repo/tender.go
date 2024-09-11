@@ -21,7 +21,7 @@ func NewTenderRepo(db *sql.DB) *TenderRepo {
 	return &TenderRepo{db: db}
 }
 
-func (t *TenderRepo) CreateTender(tender domain.Tender, orgID, creatorID string) (domain.Tender, error) {
+func (t *TenderRepo) CreateTender(tender domain.Tender, orgID, userUUID string) (domain.Tender, error) {
 	query := `INSERT INTO tenders (name, description, service_type, status, organization_id, creator_id, version) 
               VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`
 	ctx, cancelFn := context.WithTimeout(context.Background(), timeuotCtx)
@@ -33,7 +33,7 @@ func (t *TenderRepo) CreateTender(tender domain.Tender, orgID, creatorID string)
 		tender.ServiceType,
 		tender.Status,
 		orgID,
-		creatorID,
+		userUUID,
 		tender.Version).Scan(&uuid)
 
 	if err != nil {
@@ -178,7 +178,10 @@ func (t *TenderRepo) UpdateStatusTenderById(tenderUUID, status, userUUID string)
 	ctx, cancelFn := context.WithTimeout(context.Background(), timeuotCtx)
 	defer cancelFn()
 
-	updateStatusQuery := `UPDATE tenders SET status = $1 WHERE creator_id = $2 AND id = $3;`
+	updateStatusQuery := `UPDATE tenders SET status = $1, 
+                   version = COALESCE((SELECT MAX(version) FROM tenders_history WHERE tender_id = $3), 0) + 1 
+               WHERE creator_id = $2 AND id = $3;`
+
 	_, err = tx.ExecContext(ctx, updateStatusQuery, status, userUUID, tenderUUID)
 	if err != nil {
 		tx.Rollback()
@@ -188,7 +191,7 @@ func (t *TenderRepo) UpdateStatusTenderById(tenderUUID, status, userUUID string)
 
 	getTenderByIdQuery := `SELECT id, name, description, 
         service_type, status,  
-        version, created_at, updated_at 
+        version, created_at 
         FROM tenders WHERE id = $1;`
 
 	err = tx.QueryRowContext(ctx, getTenderByIdQuery, tenderUUID).Scan(
@@ -273,4 +276,9 @@ func (t *TenderRepo) UpdateTender(tenderUUID, userUUID string, tenderEditor *dom
 	}
 
 	return tender, nil
+}
+
+func (r *TenderRepo) RollbackTender(tenderUUID, userUUID string, version int) (domain.Tender, error) {
+	var tender domain.Tender
+
 }

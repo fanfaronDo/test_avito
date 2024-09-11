@@ -46,8 +46,8 @@ BEGIN
     RETURN NEW;
     ELSIF (TG_OP = 'UPDATE') THEN
         INSERT INTO tenders_history (tender_id, name, description, service_type, status, organization_id, creator_id, version, created_at)
-        VALUES (OLD.id, OLD.name, OLD.description, OLD.service_type, OLD.status, OLD.organization_id, OLD.creator_id, OLD.version, OLD.created_at);
-    RETURN OLD;
+        VALUES (NEW.id, NEW.name, NEW.description, NEW.service_type, NEW.status, NEW.organization_id, NEW.creator_id, NEW.version, NEW.created_at);
+    RETURN NEW;
 END IF;
 END;
 $$
@@ -55,6 +55,6 @@ LANGUAGE plpgsql;
 
 
 CREATE TRIGGER tender_versions_trigger
-    AFTER INSERT ON tenders
+    AFTER INSERT OR UPDATE ON tenders
     FOR EACH ROW
     EXECUTE PROCEDURE tender_versions();

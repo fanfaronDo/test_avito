@@ -28,7 +28,7 @@ func (t *TenderService) CreateTender(tenderCreator domain.TenderCreator, userUUI
 	}
 
 	var tender domain.Tender
-	tender = t.initTender(tenderCreator, userUUID)
+	tender = t.initTender(tenderCreator)
 	return t.repo.CreateTender(tender, tenderCreator.OrganizationID, userUUID)
 }
 
@@ -48,15 +48,11 @@ func (t *TenderService) GetStatusTenderByTenderID(tenderID, userUUID string) (st
 	return status, nil
 }
 
-func (t *TenderService) UpdateStatusTender(tenderUUID, status, username string) (domain.Tender, error) {
-	uuid, err := t.repo.GetUserUUID(username)
-	if err != nil {
-		return domain.Tender{}, ErrUserNotFound
-	}
-	return t.repo.UpdateStatusTenderById(tenderUUID, status, uuid)
+func (t *TenderService) UpdateStatusTender(tenderUUID, status, userUUID string) (domain.Tender, error) {
+	return t.repo.UpdateStatusTenderById(tenderUUID, status, userUUID)
 }
 
-func (t *TenderService) EditTender(tenderUUID, username string, tenderEditor *domain.TenderEditor) (domain.Tender, error) {
+func (t *TenderService) EditTender(tenderUUID, userUUID string, tenderEditor *domain.TenderEditor) (domain.Tender, error) {
 	if tenderEditor == nil {
 		return t.repo.GetTenderById(tenderUUID)
 	}
@@ -64,14 +60,14 @@ func (t *TenderService) EditTender(tenderUUID, username string, tenderEditor *do
 		return domain.Tender{}, ErrServiceTypeError
 	}
 
-	uuid, err := t.repo.GetUserUUID(username)
-	if err != nil {
-		return domain.Tender{}, ErrUserNotFound
-	}
-	return t.repo.UpdateTender(tenderUUID, uuid, tenderEditor)
+	return t.repo.UpdateTender(tenderUUID, userUUID, tenderEditor)
 }
 
-func (t *TenderService) initTender(creator domain.TenderCreator, uuid string) domain.Tender {
+func (t *TenderService) RollbackTender(tenderUUID, userUUID string, version int) (domain.Tender, error) {
+	return t.repo.Tender.RollbackTender(tenderUUID, userUUID, version)
+}
+
+func (t *TenderService) initTender(creator domain.TenderCreator) domain.Tender {
 	return domain.Tender{
 		Name:        creator.Name,
 		Description: creator.Description,

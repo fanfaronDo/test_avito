@@ -6,6 +6,10 @@ import (
 	"net/http"
 )
 
+const (
+	userIDCtx = "userid"
+)
+
 type Handler struct {
 	service *service.Service
 }
@@ -19,12 +23,18 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	api := router.Group("/api")
 	{
 		api.GET("/ping", ping)
+
 		tenders := api.Group("/tenders")
 		{
 			tenders.GET("/", h.getTenders)
 			tenders.POST("/new", h.createTender)
-			tenders.GET("/my", h.getUserTenders)
-			tenders.GET("/:tenderid/status", h.getStatusTender)
+		}
+
+		tendersWithAuth := api.Group("/tenders", h.userAuth)
+		{
+			tendersWithAuth.GET("/my", h.getUserTenders)
+			tendersWithAuth.GET("/:tenderid/status", h.getStatusTender)
+			tendersWithAuth.PUT("/:tenderid/status", h.setStatusTender)
 		}
 	}
 
