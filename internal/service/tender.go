@@ -1,8 +1,10 @@
 package service
 
 import (
+	"errors"
 	"github.com/fanfaronDo/test_avito/internal/domain"
 	"github.com/fanfaronDo/test_avito/internal/repo"
+	log "github.com/sirupsen/logrus"
 	"time"
 )
 
@@ -18,38 +20,28 @@ func NewTenderService(repo *repo.Repository) *TenderService {
 	return &TenderService{repo: repo}
 }
 
-func (t *TenderService) CreateTender(tenderCreator domain.TenderCreator, uuid string) (domain.Tender, error) {
-	if !checkStatus(tenderCreator.Status) {
-		return domain.Tender{}, ErrStatusError
-	}
+func (t *TenderService) CreateTender(tenderCreator domain.TenderCreator, userUUID string) (domain.Tender, error) {
+	tenderCreator.Status = "Created"
 	if !checkServiceType(tenderCreator.ServiceType) {
+		log.Debugf("%s: %v", ErrStatusError, errors.New("service type not found"))
 		return domain.Tender{}, ErrServiceTypeError
 	}
 
 	var tender domain.Tender
-	tender = t.initTender(tenderCreator, uuid)
-
-	return t.repo.CreateTender(tender)
+	tender = t.initTender(tenderCreator, userUUID)
+	return t.repo.CreateTender(tender, tenderCreator.OrganizationID, userUUID)
 }
 
 func (t *TenderService) GetTenders(limit, offset int, serviceType string) ([]domain.Tender, error) {
 	return t.repo.Tender.GetTenders(limit, offset, serviceType)
 }
 
-func (t *TenderService) GetTendersByUsername(limit, offset int, username string) ([]domain.Tender, error) {
-	uuid, err := t.repo.GetUserUUID(username)
-	if err != nil {
-		return nil, ErrUserNotFound
-	}
+func (t *TenderService) GetTendersByUserUUID(limit, offset int, uuid string) ([]domain.Tender, error) {
 	return t.repo.GetTendersByUserID(limit, offset, uuid)
 }
 
-func (t *TenderService) GetStatusTenderByTenderID(tenderID, username string) (string, error) {
-	uuid, err := t.repo.GetUserUUID(username)
-	if err != nil {
-		return "", ErrUserNotFound
-	}
-	status, err := t.repo.Tender.GetStatusTenderById(tenderID, uuid)
+func (t *TenderService) GetStatusTenderByTenderID(tenderID, userUUID string) (string, error) {
+	status, err := t.repo.Tender.GetStatusTenderById(tenderID, userUUID)
 	if err != nil {
 		return "", ErrTenderNotFound
 	}
@@ -81,14 +73,11 @@ func (t *TenderService) EditTender(tenderUUID, username string, tenderEditor *do
 
 func (t *TenderService) initTender(creator domain.TenderCreator, uuid string) domain.Tender {
 	return domain.Tender{
-		Name:           creator.Name,
-		Description:    creator.Description,
-		ServiceType:    creator.ServiceType,
-		Status:         creator.Status,
-		OrganizationID: creator.OrganizationID,
-		CreatorID:      uuid,
-		Version:        1,
-		CreatedAt:      time.Now(),
-		UpdatedAt:      time.Now(),
+		Name:        creator.Name,
+		Description: creator.Description,
+		ServiceType: creator.ServiceType,
+		Status:      creator.Status,
+		Version:     1,
+		CreatedAt:   time.Now(),
 	}
 }

@@ -6,12 +6,12 @@ import (
 )
 
 type Auth interface {
-	GetUserUUIDCharge(username, organisation_id string) (string, error)
+	FindUserUUIDCharge(userid string) (string, error)
 	GetUserUUID(username string) (string, error)
 }
 
 type Tender interface {
-	CreateTender(tender domain.Tender) (domain.Tender, error)
+	CreateTender(tender domain.Tender, orgID, creatorID string) (domain.Tender, error)
 	GetTenders(limit, offset int, serviceType string) ([]domain.Tender, error)
 	GetTendersByUserID(limit, offset int, uuid string) ([]domain.Tender, error)
 	GetStatusTenderById(tenderUUID, userUUID string) (string, error)

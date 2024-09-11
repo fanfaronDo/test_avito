@@ -6,14 +6,15 @@ import (
 )
 
 type Auth interface {
-	CheckUserCharge(username, organizationID string) (string, bool)
+	CheckUserCharge(username string) (string, error)
+	CheckUserExists(username string) (string, error)
 }
 
 type Tender interface {
 	CreateTender(tenderCreator domain.TenderCreator, uuid string) (domain.Tender, error)
 	GetTenders(limit, offset int, serviceType string) ([]domain.Tender, error)
-	GetTendersByUsername(limit, offset int, username string) ([]domain.Tender, error)
-	GetStatusTenderByTenderID(tenderID, username string) (string, error)
+	GetTendersByUserUUID(limit, offset int, uuid string) ([]domain.Tender, error)
+	GetStatusTenderByTenderID(tenderID, uuid string) (string, error)
 	UpdateStatusTender(tenderUUID, status, username string) (domain.Tender, error)
 	EditTender(tenderUUID, username string, tenderEditor *domain.TenderEditor) (domain.Tender, error)
 }

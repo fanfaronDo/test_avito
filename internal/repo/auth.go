@@ -14,15 +14,13 @@ func NewAuthRepo(db *sql.DB) *AuthRepo {
 	return &AuthRepo{db: db}
 }
 
-func (a *AuthRepo) GetUserUUIDCharge(username, organisation_id string) (string, error) {
-	query := `SELECT e.id FROM organization_responsible o 
-				LEFT JOIN employee e ON o.user_id = e.id 
-				WHERE e.username = $1 AND o.organization_id = $2;`
+func (a *AuthRepo) FindUserUUIDCharge(userid string) (string, error) {
+	query := `SELECT id FROM organization_responsible WHERE user_id = $1;`
 
 	var uuid string
 	ctx, cancelFn := context.WithTimeout(context.Background(), timeuotCtx)
 	defer cancelFn()
-	err := a.db.QueryRowContext(ctx, query, username, organisation_id).Scan(&uuid)
+	err := a.db.QueryRowContext(ctx, query, userid).Scan(&uuid)
 	if err != nil {
 		log.Debugf("%s: %v", ErrUserChargeNotFound, err)
 		return "", ErrUserChargeNotFound

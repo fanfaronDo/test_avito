@@ -21,7 +21,7 @@ func NewTenderRepo(db *sql.DB) *TenderRepo {
 	return &TenderRepo{db: db}
 }
 
-func (t *TenderRepo) CreateTender(tender domain.Tender) (domain.Tender, error) {
+func (t *TenderRepo) CreateTender(tender domain.Tender, orgID, creatorID string) (domain.Tender, error) {
 	query := `INSERT INTO tenders (name, description, service_type, status, organization_id, creator_id, version) 
               VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`
 	ctx, cancelFn := context.WithTimeout(context.Background(), timeuotCtx)
@@ -32,8 +32,8 @@ func (t *TenderRepo) CreateTender(tender domain.Tender) (domain.Tender, error) {
 		tender.Description,
 		tender.ServiceType,
 		tender.Status,
-		tender.OrganizationID,
-		tender.CreatorID,
+		orgID,
+		creatorID,
 		tender.Version).Scan(&uuid)
 
 	if err != nil {
@@ -47,9 +47,8 @@ func (t *TenderRepo) CreateTender(tender domain.Tender) (domain.Tender, error) {
 func (t *TenderRepo) GetTenderById(tenderUUID string) (domain.Tender, error) {
 	var tender domain.Tender
 	query := `SELECT id, name, description, 
-       				service_type, status, 
-       				organization_id, creator_id, 
-       				version, created_at, updated_at 
+       				service_type, status,  
+       				version, created_at 
 			  FROM tenders WHERE id = $1;`
 
 	ctx, cancelFn := context.WithTimeout(context.Background(), timeuotCtx)
@@ -59,11 +58,8 @@ func (t *TenderRepo) GetTenderById(tenderUUID string) (domain.Tender, error) {
 		&tender.Description,
 		&tender.ServiceType,
 		&tender.Status,
-		&tender.OrganizationID,
-		&tender.CreatorID,
 		&tender.Version,
-		&tender.CreatedAt,
-		&tender.UpdatedAt)
+		&tender.CreatedAt)
 	if err != nil {
 		return domain.Tender{}, ErrTenderNotFound
 	}
@@ -76,8 +72,7 @@ func (t *TenderRepo) GetTenders(limit, offset int, serviceType string) ([]domain
 
 	query := `SELECT id, name, description, 
        				service_type, status, 
-       				organization_id, creator_id, 
-       				version, created_at, updated_at 
+       				version, created_at 
 			  FROM tenders`
 
 	params := []interface{}{}
@@ -107,11 +102,8 @@ func (t *TenderRepo) GetTenders(limit, offset int, serviceType string) ([]domain
 			&tender.Description,
 			&tender.ServiceType,
 			&tender.Status,
-			&tender.OrganizationID,
-			&tender.CreatorID,
 			&tender.Version,
-			&tender.CreatedAt,
-			&tender.UpdatedAt)
+			&tender.CreatedAt)
 
 		if err != nil {
 			log.Debugf("%s: %v", ErrScanDataTender, err)
@@ -126,8 +118,7 @@ func (t *TenderRepo) GetTendersByUserID(limit, offset int, uuid string) ([]domai
 	var tenders []domain.Tender
 	query := `SELECT id, name, description, 
        				service_type, status, 
-       				organization_id, creator_id, 
-       				version, created_at, updated_at 
+       				version, created_at 
 				FROM tenders WHERE creator_id = $1 ORDER BY name DESC LIMIT $2 OFFSET $3;`
 
 	ctx, cancelFn := context.WithTimeout(context.Background(), timeuotCtx)
@@ -146,11 +137,8 @@ func (t *TenderRepo) GetTendersByUserID(limit, offset int, uuid string) ([]domai
 			&tender.Description,
 			&tender.ServiceType,
 			&tender.Status,
-			&tender.OrganizationID,
-			&tender.CreatorID,
 			&tender.Version,
-			&tender.CreatedAt,
-			&tender.UpdatedAt)
+			&tender.CreatedAt)
 
 		if err != nil {
 			log.Debugf("%s: %v", ErrScanDataTender, err)
@@ -199,8 +187,7 @@ func (t *TenderRepo) UpdateStatusTenderById(tenderUUID, status, userUUID string)
 	}
 
 	getTenderByIdQuery := `SELECT id, name, description, 
-        service_type, status, 
-        organization_id, creator_id, 
+        service_type, status,  
         version, created_at, updated_at 
         FROM tenders WHERE id = $1;`
 
@@ -210,11 +197,8 @@ func (t *TenderRepo) UpdateStatusTenderById(tenderUUID, status, userUUID string)
 		&tender.Description,
 		&tender.ServiceType,
 		&tender.Status,
-		&tender.OrganizationID,
-		&tender.CreatorID,
 		&tender.Version,
 		&tender.CreatedAt,
-		&tender.UpdatedAt,
 	)
 	if err != nil {
 		tx.Rollback()
@@ -244,7 +228,7 @@ func (t *TenderRepo) UpdateTender(tenderUUID, userUUID string, tenderEditor *dom
 	ctx, cancelFn := context.WithTimeout(context.Background(), timeuotCtx)
 	defer cancelFn()
 
-	updateStatusQuery := `UPDATE tenders SET name = $1, description = $2, service_type = $3, version = COALESCE((SELECT MAX(version) FROM tenders WHERE id = $4), 0) + 1 
+	updateStatusQuery := `UPDATE tenders SET name = $1, description = $2, service_type = $3, version = COALESCE((SELECT MAX(version) FROM tenders_history WHERE tender_id = $4), 0) + 1 
                WHERE creator_id = $5 AND id = $6;`
 	_, err = tx.ExecContext(ctx,
 		updateStatusQuery, tenderEditor.Name,
@@ -261,7 +245,6 @@ func (t *TenderRepo) UpdateTender(tenderUUID, userUUID string, tenderEditor *dom
 
 	getTenderByIdQuery := `SELECT id, name, description, 
         service_type, status, 
-        organization_id, creator_id, 
         version, created_at, updated_at 
         FROM tenders WHERE id = $1;`
 
@@ -271,11 +254,8 @@ func (t *TenderRepo) UpdateTender(tenderUUID, userUUID string, tenderEditor *dom
 		&tender.Description,
 		&tender.ServiceType,
 		&tender.Status,
-		&tender.OrganizationID,
-		&tender.CreatorID,
 		&tender.Version,
 		&tender.CreatedAt,
-		&tender.UpdatedAt,
 	)
 	if err != nil {
 		tx.Rollback()

@@ -23,6 +23,8 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		{
 			tenders.GET("/", h.getTenders)
 			tenders.POST("/new", h.createTender)
+			tenders.GET("/my", h.getUserTenders)
+			tenders.GET("/:tenderid/status", h.getStatusTender)
 		}
 	}
 

@@ -5,8 +5,9 @@ import (
 )
 
 var (
-	ErrUserNotFound     = errors.New("user not found")
-	ErrTenderNotFound   = errors.New("tender not found")
-	ErrServiceTypeError = errors.New("service type error")
-	ErrStatusError      = errors.New("status error")
+	ErrUserNotFound      = errors.New("user not found")
+	ErrTenderNotFound    = errors.New("tender not found")
+	ErrServiceTypeError  = errors.New("service type error")
+	ErrStatusError       = errors.New("status error")
+	ErrUnauthorizedError = errors.New("unauthorized error")
 )
