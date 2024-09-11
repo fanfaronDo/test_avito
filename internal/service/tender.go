@@ -63,9 +63,9 @@ func (t *TenderService) EditTender(tenderUUID, userUUID string, tenderEditor *do
 	return t.repo.UpdateTender(tenderUUID, userUUID, tenderEditor)
 }
 
-func (t *TenderService) RollbackTender(tenderUUID, userUUID string, version int) (domain.Tender, error) {
-	return t.repo.Tender.RollbackTender(tenderUUID, userUUID, version)
-}
+//func (t *TenderService) RollbackTender(tenderUUID, userUUID string, version int) (domain.Tender, error) {
+//	return t.repo.Tender.RollbackTender(tenderUUID, userUUID, version)
+//}
 
 func (t *TenderService) initTender(creator domain.TenderCreator) domain.Tender {
 	return domain.Tender{

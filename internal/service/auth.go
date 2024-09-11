@@ -10,19 +10,26 @@ func NewAuthService(repo *repo.Repository) *AuthService {
 	return &AuthService{repo: repo}
 }
 
-func (a *AuthService) CheckUserExists(username string) (string, error) {
-	userUUID, err := a.repo.GetUserUUID(username)
-	if err != nil {
-		return "", ErrUserNotFound
-	}
-	return userUUID, err
+func (a *AuthService) GetUserId(username string) (string, error) {
+	return a.repo.Auth.GetUserUUID(username)
 }
 
-func (a *AuthService) CheckUserCharge(userUUID string) (string, error) {
-	_, err := a.repo.FindUserUUIDCharge(userUUID)
-	if err != nil {
-		return "", ErrUnauthorizedError
-	}
+func (a *AuthService) GetUserChargeId(username string) (string, error) {
+	return a.repo.Auth.GetUserChargeUUID(username)
+}
 
-	return userUUID, nil
+func (a *AuthService) IsUserChargeExist(username string) bool {
+	_, err := a.repo.Auth.GetUserChargeUUID(username)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+func (a *AuthService) CheckUserCharge(userUUID, organisationid string) (string, error) {
+	return a.repo.Auth.CheckUserCharge(userUUID, organisationid)
+}
+
+func (a *AuthService) CreateUserCharge(userUUID, username string) (string, error) {
+	return a.repo.Auth.CreateUserCharge(userUUID, username)
 }

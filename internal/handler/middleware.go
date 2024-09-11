@@ -12,7 +12,7 @@ func (h *Handler) userIdentity(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"reason": service.ErrUnauthorizedError.Error()})
 		return
 	}
-	userUUID, err := h.service.Auth.CheckUserExists(username)
+	userUUID, err := h.service.Auth.GetUserId(username)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"reason": err.Error()})
 		return
@@ -27,13 +27,13 @@ func (h *Handler) userAuth(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"reason": service.ErrUnauthorizedError.Error()})
 		return
 	}
-	userUUID, err := h.service.Auth.CheckUserExists(username)
+	userUUID, err := h.service.Auth.GetUserId(username)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"reason": err.Error()})
 		return
 	}
 
-	_, err = h.service.Auth.CheckUserCharge(userUUID)
+	_, err = h.service.Auth.GetUserChargeId(userUUID)
 	if err != nil {
 		c.JSON(http.StatusForbidden, gin.H{"reason": err.Error()})
 		return

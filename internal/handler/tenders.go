@@ -3,7 +3,6 @@ package handler
 import (
 	"github.com/fanfaronDo/test_avito/internal/domain"
 	"github.com/gin-gonic/gin"
-	"log"
 	"net/http"
 	"strconv"
 )
@@ -36,19 +35,31 @@ func (h *Handler) createTender(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"reason": err.Error()})
 		return
 	}
-	userUUID, err := h.service.Auth.CheckUserExists(tenderCreator.CreatorUsername)
+	userUUID, err := h.service.Auth.GetUserId(tenderCreator.CreatorUsername)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"reason": err.Error()})
 		return
 	}
-	_, err = h.service.Auth.CheckUserCharge(userUUID)
+	_, err = h.service.Auth.CheckUserCharge(userUUID, tenderCreator.OrganizationID)
 	if err != nil {
 		c.JSON(http.StatusForbidden, gin.H{"reason": err.Error()})
 		return
 	}
+	var userChargeId string
 
-	tender, err := h.service.CreateTender(tenderCreator, userUUID)
-	log.Println(tender)
+	if !h.service.Auth.IsUserChargeExist(tenderCreator.CreatorUsername) {
+		userChargeId, err = h.service.Auth.CreateUserCharge(userUUID, tenderCreator.CreatorUsername)
+	} else {
+		userChargeId, err = h.service.Auth.GetUserChargeId(tenderCreator.CreatorUsername)
+	}
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"reason": err.Error()})
+		return
+	}
+
+	tender, err := h.service.CreateTender(tenderCreator, userChargeId)
+
 	c.JSON(http.StatusOK, tender)
 }
 
@@ -149,21 +160,21 @@ func (h *Handler) editTender(c *gin.Context) {
 	c.JSON(http.StatusOK, tender)
 }
 
-func (h *Handler) rollbackTender(c *gin.Context) {
-	tenderid := c.Param("tenderid")
-	if tenderid == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"reason": ErrUnsupportedRequest.Error()})
-		return
-	}
-	version, isExist := c.GetQuery("version")
-	if !isExist {
-		c.JSON(http.StatusBadRequest, gin.H{"reason": ErrUnsupportedRequest.Error()})
-		return
-	}
-	versionINT, err := strconv.Atoi(version)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"reason": ErrUnsupportedRequest.Error()})
-		return
-	}
-
-}
+//func (h *Handler) rollbackTender(c *gin.Context) {
+//	tenderid := c.Param("tenderid")
+//	if tenderid == "" {
+//		c.JSON(http.StatusBadRequest, gin.H{"reason": ErrUnsupportedRequest.Error()})
+//		return
+//	}
+//	version, isExist := c.GetQuery("version")
+//	if !isExist {
+//		c.JSON(http.StatusBadRequest, gin.H{"reason": ErrUnsupportedRequest.Error()})
+//		return
+//	}
+//	versionINT, err := strconv.Atoi(version)
+//	if err != nil {
+//		c.JSON(http.StatusBadRequest, gin.H{"reason": ErrUnsupportedRequest.Error()})
+//		return
+//	}
+//
+//}

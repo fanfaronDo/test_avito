@@ -280,5 +280,56 @@ func (t *TenderRepo) UpdateTender(tenderUUID, userUUID string, tenderEditor *dom
 
 func (r *TenderRepo) RollbackTender(tenderUUID, userUUID string, version int) (domain.Tender, error) {
 	var tender domain.Tender
+	tx, err := r.db.Begin()
+	if err != nil {
+		log.Debugf("%s: %v", ErrInFailedTransaction, err)
+		return domain.Tender{}, ErrInFailedTransaction
+	}
+	ctx, cancelFn := context.WithTimeout(context.Background(), timeuotCtx)
+	defer cancelFn()
+	query := `UPDATE tenders t SET name = th.name,
+					description = th.description,
+					status = th.status,
+					service_type = th.service_type
+			  FROM (SELECT tender_id, name, description, status, service_type
+				    FROM tenders_history
+				    WHERE tender_id = $1 AND version = $2) th
+			  WHERE t.id = th.tender_id;`
 
+	_, err = tx.ExecContext(ctx, query, tenderUUID, version)
+	if err != nil {
+		tx.Rollback()
+		log.Debugf("%s: %v", ErrTenderNotFound, err)
+		return domain.Tender{}, ErrTenderNotFound
+	}
+	getTenderByIdQuery := `SELECT id, name, description, 
+								service_type, status, 
+						        version, created_at, updated_at 
+						   FROM tenders WHERE id = $1;`
+
+	err = tx.QueryRowContext(ctx, getTenderByIdQuery, tenderUUID).Scan(
+		&tender.ID,
+		&tender.Name,
+		&tender.Description,
+		&tender.ServiceType,
+		&tender.Status,
+		&tender.Version,
+		&tender.CreatedAt,
+	)
+	if err != nil {
+		tx.Rollback()
+		if err == sql.ErrNoRows {
+			log.Debugf("%s: %v", ErrTenderNotFound, err)
+			return domain.Tender{}, ErrTenderNotFound
+		}
+		log.Debugf("%s: %v", ErrFetchingTender, err)
+		return domain.Tender{}, ErrFetchingTender
+	}
+
+	if err = tx.Commit(); err != nil {
+		log.Debugf("%s: %v", ErrCommittingTransaction, err)
+		return domain.Tender{}, ErrCommittingTransaction
+	}
+
+	return tender, nil
 }

@@ -6,8 +6,11 @@ import (
 )
 
 type Auth interface {
-	CheckUserCharge(username string) (string, error)
-	CheckUserExists(username string) (string, error)
+	GetUserId(username string) (string, error)
+	GetUserChargeId(username string) (string, error)
+	CheckUserCharge(userUUID, organisationid string) (string, error)
+	CreateUserCharge(userUUID, username string) (string, error)
+	IsUserChargeExist(username string) bool
 }
 
 type Tender interface {

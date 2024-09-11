@@ -6,8 +6,10 @@ import (
 )
 
 type Auth interface {
-	FindUserUUIDCharge(userid string) (string, error)
+	CheckUserCharge(userid, organisationid string) (string, error)
+	CreateUserCharge(userid, username string) (string, error)
 	GetUserUUID(username string) (string, error)
+	GetUserChargeUUID(username string) (string, error)
 }
 
 type Tender interface {
@@ -18,7 +20,7 @@ type Tender interface {
 	UpdateStatusTenderById(tenderUUID, status, userUUID string) (domain.Tender, error)
 	UpdateTender(tenderUUID, userUUID string, tenderEditor *domain.TenderEditor) (domain.Tender, error)
 	GetTenderById(tenderUUID string) (domain.Tender, error)
-	RollbackTender(tenderUUID, userUUID string, version int) (domain.Tender, error)
+	//RollbackTender(tenderUUID, userUUID string, version int) (domain.Tender, error)
 }
 
 type Repository struct {
