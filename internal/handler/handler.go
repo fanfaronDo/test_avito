@@ -7,8 +7,10 @@ import (
 )
 
 const (
-	userIDCtx = "userid"
-	tenderID  = "tenderId"
+	userIDCtx   = "userid"
+	tenderIDCtx = "tenderid"
+	tenderID    = "tenderId"
+	version     = "version"
 )
 
 type Handler struct {

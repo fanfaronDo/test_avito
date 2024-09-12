@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"github.com/fanfaronDo/test_avito/internal/domain"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -152,24 +153,31 @@ func (h *Handler) editTender(c *gin.Context) {
 func (h *Handler) rollbackTender(c *gin.Context) {
 	userUUID, err := getUserId(c)
 	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"reason": ErrUnsupportedRequest.Error()})
+		fmt.Println(1)
 		return
 	}
 
 	tenderid := c.Param(tenderID)
 	if tenderid == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"reason": ErrUnsupportedRequest.Error()})
+		fmt.Println(2)
 		return
 	}
-	version, isExist := c.GetQuery("version")
-	if !isExist {
+
+	v := c.Param(version)
+	if v == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"reason": ErrUnsupportedRequest.Error()})
 		return
 	}
-	versionINT, err := strconv.Atoi(version)
+
+	versionINT, err := strconv.Atoi(v)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"reason": ErrUnsupportedRequest.Error()})
+		fmt.Println(4)
 		return
 	}
+
 	tender, err := h.service.Tender.RollbackTender(tenderid, userUUID, versionINT)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"reason": err.Error()})

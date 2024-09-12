@@ -294,10 +294,10 @@ func (r *TenderRepo) RollbackTender(tenderUUID, userUUID string, version int) (d
 					service_type = th.service_type
 			  FROM (SELECT tender_id, name, description, status, service_type
 				    FROM tenders_history
-				    WHERE tender_id = $1 AND creator_id = $2 AND version = $3) th
+				    WHERE tender_id = $1  AND version = $2) th
 			  WHERE t.id = th.tender_id;`
 
-	_, err = tx.ExecContext(ctx, query, tenderUUID, userUUID, version)
+	_, err = tx.ExecContext(ctx, query, tenderUUID, version)
 	if err != nil {
 		tx.Rollback()
 		log.Debugf("%s: %v", ErrTenderNotFound, err)
@@ -305,8 +305,8 @@ func (r *TenderRepo) RollbackTender(tenderUUID, userUUID string, version int) (d
 	}
 	getTenderByIdQuery := `SELECT id, name, description, 
 								service_type, status, 
-						        version, created_at, updated_at 
-						   FROM tenders WHERE id = $1 AND $2;`
+						        version, created_at 
+						   FROM tenders WHERE id = $1 AND creator_id = $2;`
 
 	err = tx.QueryRowContext(ctx, getTenderByIdQuery, tenderUUID, userUUID).Scan(
 		&tender.ID,

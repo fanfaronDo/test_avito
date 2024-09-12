@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"github.com/fanfaronDo/test_avito/internal/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -23,13 +24,14 @@ func (h *Handler) userIdentity(c *gin.Context) {
 	if tenderid == "" {
 		return
 	}
-
+	fmt.Println(tenderid)
 	userUUID, err = h.service.Auth.CheckUserCreatorTender(userUUID, tenderid)
 	if err != nil {
 		c.JSON(http.StatusForbidden, gin.H{"reason": err.Error()})
 		return
 	}
 
+	c.Set(tenderIDCtx, tenderid)
 }
 
 func getUserId(c *gin.Context) (string, error) {
