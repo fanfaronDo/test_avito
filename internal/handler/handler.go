@@ -25,17 +25,13 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	{
 		api.GET("/ping", ping)
 
-		tenders := api.Group("/tenders")
+		tenders := api.Group("/tenders", h.userIdentity)
 		{
 			tenders.GET("/", h.getTenders)
+			tenders.GET("/my", h.getUserTenders)
 			tenders.POST("/new", h.createTender)
-		}
-
-		tendersWithAuth := api.Group("/tenders", h.userChargeIdentity)
-		{
-			tendersWithAuth.GET("/my", h.getUserTenders)
-			tendersWithAuth.GET("/:tenderId/status", h.getStatusTender)
-			tendersWithAuth.PUT("/:tenderId/status", h.setStatusTender)
+			tenders.GET("/:tenderId/status", h.getStatusTender)
+			tenders.PUT("/:tenderId/status", h.setStatusTender)
 			tenders.PATCH("/:tenderId/edit", h.editTender)
 			tenders.PUT("/:tenderId/rollback/:version", h.rollbackTender)
 		}

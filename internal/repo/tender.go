@@ -248,7 +248,7 @@ func (t *TenderRepo) UpdateTender(tenderUUID, userUUID string, tenderEditor *dom
 
 	getTenderByIdQuery := `SELECT id, name, description, 
         service_type, status, 
-        version, created_at, updated_at 
+        version, created_at 
         FROM tenders WHERE id = $1;`
 
 	err = tx.QueryRowContext(ctx, getTenderByIdQuery, tenderUUID).Scan(

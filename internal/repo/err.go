@@ -15,4 +15,5 @@ var (
 	ErrFetchingTender                           = errors.New("fetching tender error ")
 	ErrCommittingTransaction                    = errors.New("committing tender error ")
 	ErrUserChargeNotAffiliationThisOrganisation = errors.New("user charge not affiliation this organisation")
+	ErrUserNotCreator                           = errors.New("user not creator")
 )

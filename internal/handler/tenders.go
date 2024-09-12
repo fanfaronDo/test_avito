@@ -40,23 +40,12 @@ func (h *Handler) createTender(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"reason": err.Error()})
 		return
 	}
-	userUUID, err = h.service.Auth.GetUserCharge(userUUID)
+
+	userUUID, err = h.service.Auth.CheckOrganizationAffiliation(userUUID, tenderCreator.OrganizationID)
 	if err != nil {
 		c.JSON(http.StatusForbidden, gin.H{"reason": err.Error()})
 		return
 	}
-
-	userUUID, err = h.service.Auth.CheckOrganizationAffiliation(userUUID, tenderCreator.OrganizationID)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"reason": err.Error()})
-		return
-	}
-
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"reason": err.Error()})
-		return
-	}
-
 	tender, err := h.service.CreateTender(tenderCreator, userUUID)
 
 	c.JSON(http.StatusOK, tender)

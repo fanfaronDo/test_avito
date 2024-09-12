@@ -29,16 +29,30 @@ func (a *AuthRepo) CheckOrganizationAffiliation(userid, organisationid string) (
 	return uuid, nil
 }
 
-func (a *AuthRepo) GetUserCharge(userid string) (string, error) {
+//func (a *AuthRepo) GetUserCharge(userid string) (string, error) {
+//	var uuid string
+//	ctx, cancelFn := context.WithTimeout(context.Background(), timeuotCtx)
+//	defer cancelFn()
+//	query := `SELECT user_id FROM organization_responsible WHERE user_id = $1;`
+//	err := a.db.QueryRowContext(ctx, query, userid).Scan(&uuid)
+//	if err != nil {
+//		log.Debugf("%s: %v", ErrUserChargeNotFound, err)
+//		return "", ErrUserChargeNotFound
+//	}
+//	return uuid, nil
+//}
+
+func (a *AuthRepo) CheckUserCreatorTender(userUUID, tenderUUID string) (string, error) {
 	var uuid string
 	ctx, cancelFn := context.WithTimeout(context.Background(), timeuotCtx)
 	defer cancelFn()
-	query := `SELECT user_id FROM organization_responsible WHERE user_id = $1;`
-	err := a.db.QueryRowContext(ctx, query, userid).Scan(&uuid)
+	query := `SELECT creator_id FROM tenders WHERE user_id = $1 AND tender_id = $2;`
+	err := a.db.QueryRowContext(ctx, query, userUUID, tenderUUID).Scan(&uuid)
 	if err != nil {
-		log.Debugf("%s: %v", ErrUserChargeNotFound, err)
-		return "", ErrUserChargeNotFound
+		log.Debugf("%s: %v", ErrUserNotCreator, err)
+		return "", ErrUserNotCreator
 	}
+
 	return uuid, nil
 }
 

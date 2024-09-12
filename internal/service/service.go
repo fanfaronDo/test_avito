@@ -8,7 +8,8 @@ import (
 type Auth interface {
 	GetUserId(username string) (string, error)
 	CheckOrganizationAffiliation(userid, organisationid string) (string, error)
-	GetUserCharge(userid string) (string, error)
+	CheckUserCreatorTender(userUUID, tenderUUID string) (string, error)
+	//GetUserCharge(userid string) (string, error)
 }
 
 type Tender interface {
