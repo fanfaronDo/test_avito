@@ -8,6 +8,7 @@ import (
 
 const (
 	userIDCtx = "userid"
+	tenderID  = "tenderId"
 )
 
 type Handler struct {
@@ -30,11 +31,13 @@ func (h *Handler) InitRoutes() *gin.Engine {
 			tenders.POST("/new", h.createTender)
 		}
 
-		tendersWithAuth := api.Group("/tenders", h.userAuth)
+		tendersWithAuth := api.Group("/tenders", h.userChargeIdentity)
 		{
 			tendersWithAuth.GET("/my", h.getUserTenders)
-			tendersWithAuth.GET("/:tenderid/status", h.getStatusTender)
-			tendersWithAuth.PUT("/:tenderid/status", h.setStatusTender)
+			tendersWithAuth.GET("/:tenderId/status", h.getStatusTender)
+			tendersWithAuth.PUT("/:tenderId/status", h.setStatusTender)
+			tenders.PATCH("/:tenderId/edit", h.editTender)
+			tenders.PUT("/:tenderId/rollback/:version", h.rollbackTender)
 		}
 	}
 

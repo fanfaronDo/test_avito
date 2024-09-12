@@ -285,6 +285,7 @@ func (r *TenderRepo) RollbackTender(tenderUUID, userUUID string, version int) (d
 		log.Debugf("%s: %v", ErrInFailedTransaction, err)
 		return domain.Tender{}, ErrInFailedTransaction
 	}
+
 	ctx, cancelFn := context.WithTimeout(context.Background(), timeuotCtx)
 	defer cancelFn()
 	query := `UPDATE tenders t SET name = th.name,
@@ -293,10 +294,10 @@ func (r *TenderRepo) RollbackTender(tenderUUID, userUUID string, version int) (d
 					service_type = th.service_type
 			  FROM (SELECT tender_id, name, description, status, service_type
 				    FROM tenders_history
-				    WHERE tender_id = $1 AND version = $2) th
+				    WHERE tender_id = $1 AND creator_id = $2 AND version = $3) th
 			  WHERE t.id = th.tender_id;`
 
-	_, err = tx.ExecContext(ctx, query, tenderUUID, version)
+	_, err = tx.ExecContext(ctx, query, tenderUUID, userUUID, version)
 	if err != nil {
 		tx.Rollback()
 		log.Debugf("%s: %v", ErrTenderNotFound, err)
@@ -305,9 +306,9 @@ func (r *TenderRepo) RollbackTender(tenderUUID, userUUID string, version int) (d
 	getTenderByIdQuery := `SELECT id, name, description, 
 								service_type, status, 
 						        version, created_at, updated_at 
-						   FROM tenders WHERE id = $1;`
+						   FROM tenders WHERE id = $1 AND $2;`
 
-	err = tx.QueryRowContext(ctx, getTenderByIdQuery, tenderUUID).Scan(
+	err = tx.QueryRowContext(ctx, getTenderByIdQuery, tenderUUID, userUUID).Scan(
 		&tender.ID,
 		&tender.Name,
 		&tender.Description,

@@ -7,10 +7,8 @@ import (
 
 type Auth interface {
 	GetUserId(username string) (string, error)
-	GetUserChargeId(username string) (string, error)
-	CheckUserCharge(userUUID, organisationid string) (string, error)
-	CreateUserCharge(userUUID, username string) (string, error)
-	IsUserChargeExist(username string) bool
+	CheckOrganizationAffiliation(userid, organisationid string) (string, error)
+	GetUserCharge(userid string) (string, error)
 }
 
 type Tender interface {
@@ -20,6 +18,7 @@ type Tender interface {
 	GetStatusTenderByTenderID(tenderID, userUUID string) (string, error)
 	UpdateStatusTender(tenderUUID, status, userUUID string) (domain.Tender, error)
 	EditTender(tenderUUID, userUUID string, tenderEditor *domain.TenderEditor) (domain.Tender, error)
+	RollbackTender(tenderUUID, userUUID string, version int) (domain.Tender, error)
 }
 
 type Service struct {

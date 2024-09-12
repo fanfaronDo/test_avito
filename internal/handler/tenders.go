@@ -40,17 +40,16 @@ func (h *Handler) createTender(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"reason": err.Error()})
 		return
 	}
-	_, err = h.service.Auth.CheckUserCharge(userUUID, tenderCreator.OrganizationID)
+	userUUID, err = h.service.Auth.GetUserCharge(userUUID)
 	if err != nil {
 		c.JSON(http.StatusForbidden, gin.H{"reason": err.Error()})
 		return
 	}
-	var userChargeId string
 
-	if !h.service.Auth.IsUserChargeExist(tenderCreator.CreatorUsername) {
-		userChargeId, err = h.service.Auth.CreateUserCharge(userUUID, tenderCreator.CreatorUsername)
-	} else {
-		userChargeId, err = h.service.Auth.GetUserChargeId(tenderCreator.CreatorUsername)
+	userUUID, err = h.service.Auth.CheckOrganizationAffiliation(userUUID, tenderCreator.OrganizationID)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"reason": err.Error()})
+		return
 	}
 
 	if err != nil {
@@ -58,7 +57,7 @@ func (h *Handler) createTender(c *gin.Context) {
 		return
 	}
 
-	tender, err := h.service.CreateTender(tenderCreator, userChargeId)
+	tender, err := h.service.CreateTender(tenderCreator, userUUID)
 
 	c.JSON(http.StatusOK, tender)
 }
@@ -97,7 +96,7 @@ func (h *Handler) getStatusTender(c *gin.Context) {
 		return
 	}
 
-	tenderid := c.Param("tenderid")
+	tenderid := c.Param(tenderID)
 	if tenderid == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"reason": ErrUnsupportedRequest.Error()})
 		return
@@ -116,7 +115,7 @@ func (h *Handler) setStatusTender(c *gin.Context) {
 	if err != nil {
 		return
 	}
-	tenderid := c.Param("tenderid")
+	tenderid := c.Param(tenderID)
 	if tenderid == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"reason": ErrUnsupportedRequest.Error()})
 		return
@@ -138,10 +137,11 @@ func (h *Handler) setStatusTender(c *gin.Context) {
 func (h *Handler) editTender(c *gin.Context) {
 	var tenderEditor domain.TenderEditor
 	userUUID, err := getUserId(c)
+
 	if err != nil {
 		return
 	}
-	tenderid := c.Param("tenderid")
+	tenderid := c.Param(tenderID)
 	if tenderid == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"reason": ErrUnsupportedRequest.Error()})
 		return
@@ -160,21 +160,32 @@ func (h *Handler) editTender(c *gin.Context) {
 	c.JSON(http.StatusOK, tender)
 }
 
-//func (h *Handler) rollbackTender(c *gin.Context) {
-//	tenderid := c.Param("tenderid")
-//	if tenderid == "" {
-//		c.JSON(http.StatusBadRequest, gin.H{"reason": ErrUnsupportedRequest.Error()})
-//		return
-//	}
-//	version, isExist := c.GetQuery("version")
-//	if !isExist {
-//		c.JSON(http.StatusBadRequest, gin.H{"reason": ErrUnsupportedRequest.Error()})
-//		return
-//	}
-//	versionINT, err := strconv.Atoi(version)
-//	if err != nil {
-//		c.JSON(http.StatusBadRequest, gin.H{"reason": ErrUnsupportedRequest.Error()})
-//		return
-//	}
-//
-//}
+func (h *Handler) rollbackTender(c *gin.Context) {
+	userUUID, err := getUserId(c)
+	if err != nil {
+		return
+	}
+
+	tenderid := c.Param(tenderID)
+	if tenderid == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"reason": ErrUnsupportedRequest.Error()})
+		return
+	}
+	version, isExist := c.GetQuery("version")
+	if !isExist {
+		c.JSON(http.StatusBadRequest, gin.H{"reason": ErrUnsupportedRequest.Error()})
+		return
+	}
+	versionINT, err := strconv.Atoi(version)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"reason": ErrUnsupportedRequest.Error()})
+		return
+	}
+	tender, err := h.service.Tender.RollbackTender(tenderid, userUUID, versionINT)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"reason": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, tender)
+}
