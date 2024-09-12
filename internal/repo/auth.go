@@ -46,7 +46,7 @@ func (a *AuthRepo) CheckUserCreatorTender(userUUID, tenderUUID string) (string, 
 	var uuid string
 	ctx, cancelFn := context.WithTimeout(context.Background(), timeuotCtx)
 	defer cancelFn()
-	query := `SELECT creator_id FROM tenders WHERE user_id = $1 AND tender_id = $2;`
+	query := `SELECT creator_id FROM tenders WHERE creator_id = $1 AND id = $2;`
 	err := a.db.QueryRowContext(ctx, query, userUUID, tenderUUID).Scan(&uuid)
 	if err != nil {
 		log.Debugf("%s: %v", ErrUserNotCreator, err)

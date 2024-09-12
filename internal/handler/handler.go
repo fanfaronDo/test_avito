@@ -7,10 +7,9 @@ import (
 )
 
 const (
-	userIDCtx   = "userid"
-	tenderIDCtx = "tenderid"
-	tenderID    = "tenderId"
-	version     = "version"
+	userID   = "userid"
+	tenderID = "tenderId"
+	version  = "version"
 )
 
 type Handler struct {
@@ -27,15 +26,23 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	{
 		api.GET("/ping", ping)
 
-		tenders := api.Group("/tenders", h.userIdentity)
+		tenders := api.Group("/tenders")
 		{
 			tenders.GET("/", h.getTenders)
-			tenders.GET("/my", h.getUserTenders)
 			tenders.POST("/new", h.createTender)
-			tenders.GET("/:tenderId/status", h.getStatusTender)
-			tenders.PUT("/:tenderId/status", h.setStatusTender)
-			tenders.PATCH("/:tenderId/edit", h.editTender)
-			tenders.PUT("/:tenderId/rollback/:version", h.rollbackTender)
+		}
+
+		userTenders := api.Group("/tenders", h.userIdentity)
+		{
+			userTenders.GET("/my", h.getUserTenders)
+		}
+
+		editor := api.Group("/tenders", h.userAuthorisation)
+		{
+			editor.GET("/:tenderId/status", h.getStatusTender)
+			editor.PUT("/:tenderId/status", h.setStatusTender)
+			editor.PATCH("/:tenderId/edit", h.editTender)
+			editor.PUT("/:tenderId/rollback/:version", h.rollbackTender)
 		}
 	}
 

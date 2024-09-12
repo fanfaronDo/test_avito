@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"github.com/fanfaronDo/test_avito/internal/domain"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -57,7 +56,6 @@ func (h *Handler) getUserTenders(c *gin.Context) {
 
 	userUUID, err := getUserId(c)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"reason": err.Error()})
 		return
 	}
 
@@ -110,8 +108,8 @@ func (h *Handler) setStatusTender(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"reason": ErrUnsupportedRequest.Error()})
 		return
 	}
-	status, isExist := c.GetQuery("status")
-	if !isExist {
+	status, ok := c.GetQuery("status")
+	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"reason": ErrUnsupportedRequest.Error()})
 		return
 	}
@@ -127,10 +125,10 @@ func (h *Handler) setStatusTender(c *gin.Context) {
 func (h *Handler) editTender(c *gin.Context) {
 	var tenderEditor domain.TenderEditor
 	userUUID, err := getUserId(c)
-
 	if err != nil {
 		return
 	}
+
 	tenderid := c.Param(tenderID)
 	if tenderid == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"reason": ErrUnsupportedRequest.Error()})
@@ -154,14 +152,12 @@ func (h *Handler) rollbackTender(c *gin.Context) {
 	userUUID, err := getUserId(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"reason": ErrUnsupportedRequest.Error()})
-		fmt.Println(1)
 		return
 	}
 
 	tenderid := c.Param(tenderID)
 	if tenderid == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"reason": ErrUnsupportedRequest.Error()})
-		fmt.Println(2)
 		return
 	}
 
@@ -174,7 +170,6 @@ func (h *Handler) rollbackTender(c *gin.Context) {
 	versionINT, err := strconv.Atoi(v)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"reason": ErrUnsupportedRequest.Error()})
-		fmt.Println(4)
 		return
 	}
 

@@ -291,13 +291,14 @@ func (r *TenderRepo) RollbackTender(tenderUUID, userUUID string, version int) (d
 	query := `UPDATE tenders t SET name = th.name,
 					description = th.description,
 					status = th.status,
-					service_type = th.service_type
+					service_type = th.service_type,
+					version = COALESCE((SELECT MAX(version) FROM tenders_history WHERE tender_id = $1), 0) + 1
 			  FROM (SELECT tender_id, name, description, status, service_type
 				    FROM tenders_history
-				    WHERE tender_id = $1  AND version = $2) th
+				    WHERE tender_id = $2  AND version = $3) th
 			  WHERE t.id = th.tender_id;`
 
-	_, err = tx.ExecContext(ctx, query, tenderUUID, version)
+	_, err = tx.ExecContext(ctx, query, tenderUUID, tenderUUID, version)
 	if err != nil {
 		tx.Rollback()
 		log.Debugf("%s: %v", ErrTenderNotFound, err)
