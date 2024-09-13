@@ -68,5 +68,6 @@ func validateConfig(v reflect.Value) error {
 			}
 		}
 	}
+
 	return nil
 }

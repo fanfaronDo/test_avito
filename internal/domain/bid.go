@@ -17,6 +17,6 @@ type BidCreator struct {
 	Description string `json:"description"`
 	Status      string `json:"status"`
 	TenderID    string `json:"tenderId"`
-	AuthorType  string `json:"author_type"`
+	AuthorType  string `json:"authorType"`
 	AuthorID    string `json:"authorId"`
 }

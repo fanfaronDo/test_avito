@@ -30,5 +30,5 @@ func (h *Handler) createBid(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"reason": bids})
+	c.JSON(http.StatusOK, bids)
 }
