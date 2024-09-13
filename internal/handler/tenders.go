@@ -1,7 +1,9 @@
 package handler
 
 import (
+	"errors"
 	"github.com/fanfaronDo/test_avito/internal/domain"
+	"github.com/fanfaronDo/test_avito/internal/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
@@ -115,7 +117,11 @@ func (h *Handler) setStatusTender(c *gin.Context) {
 	}
 	tender, err := h.service.Tender.UpdateStatusTender(tenderid, status, userUUID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"reason": err.Error()})
+		if errors.Is(err, service.ErrStatusError) {
+			c.JSON(http.StatusBadRequest, gin.H{"reason": err.Error()})
+		} else {
+			c.JSON(http.StatusNotFound, gin.H{"reason": err.Error()})
+		}
 		return
 	}
 

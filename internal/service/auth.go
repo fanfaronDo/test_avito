@@ -32,3 +32,7 @@ func (a *AuthService) CheckUserCreatorBids(userUUID, bidsUUID string) (string, e
 func (a *AuthService) CheckUserID(username string) (string, error) {
 	return a.repo.Auth.CheckUserID(username)
 }
+
+func (a *AuthService) CheckUserCreatorBidsByTenderId(userUUID, tenderUUID string) (string, error) {
+	return a.repo.Auth.CheckUserCreatorBidsByTenderId(userUUID, tenderUUID)
+}

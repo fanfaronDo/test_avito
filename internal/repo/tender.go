@@ -82,6 +82,7 @@ func (t *TenderRepo) GetTenders(limit, offset int, serviceType string) ([]domain
 		params = append(params, serviceType)
 		paramsIndex++
 	}
+
 	query += " ORDER BY name DESC"
 	query += " LIMIT $" + strconv.Itoa(paramsIndex) + " OFFSET $" + strconv.Itoa(paramsIndex+1)
 	params = append(params, limit, offset)

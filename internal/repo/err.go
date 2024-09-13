@@ -18,4 +18,5 @@ var (
 	ErrUserNotCreator                           = errors.New("user not creator")
 	ErrUserChargeNotAffiliationThisTender       = errors.New("user charge not affiliation this tender")
 	ErrCreationBid                              = errors.New("creation bid err")
+	ErrBidsNotFound                             = errors.New("bids not found")
 )

@@ -2,10 +2,10 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/fanfaronDo/test_avito/internal/app"
 	"github.com/fanfaronDo/test_avito/internal/config"
 	"log"
-	"os"
 )
 
 func main() {
@@ -16,8 +16,9 @@ func main() {
 	err := config.ValidateConfig(cfg)
 	if err != nil {
 		log.Fatal(err)
-		os.Exit(1)
+		//os.Exit(1)
 	}
+	fmt.Println(cfg)
 
 	app.Run(cfg)
 }

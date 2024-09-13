@@ -9,6 +9,7 @@ import (
 const (
 	userID   = "userid"
 	tenderID = "tenderId"
+	bidID    = "bidId"
 	version  = "version"
 )
 
@@ -44,11 +45,22 @@ func (h *Handler) InitRoutes() *gin.Engine {
 			editor.PATCH("/:tenderId/edit", h.editTender)
 			editor.PUT("/:tenderId/rollback/:version", h.rollbackTender)
 		}
-		
+
 		bids := api.Group("/bids")
 		{
 			bids.POST("/new", h.createBid)
 		}
+
+		userBids := api.Group("/bids", h.userIdentityBids)
+		{
+			userBids.GET("/my", h.getBids)
+			userBids.GET("/:tenderId/list", h.getBidByTenderId)
+		}
+
+		//editorBids := api.Group("/bids", h.userAuthorisationBids)
+		//{
+		//	editorBids.GET("/:tenderId/list", h.getBidByTenderId)
+		//}
 	}
 
 	return router

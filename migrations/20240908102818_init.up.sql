@@ -23,8 +23,6 @@ CREATE TABLE bids (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-
-
 CREATE TABLE tenders_history (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tender_id UUID NOT NULL,

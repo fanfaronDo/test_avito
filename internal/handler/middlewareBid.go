@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func (h *Handler) userIdentity(c *gin.Context) {
+func (h *Handler) userIdentityBids(c *gin.Context) {
 	username := c.Query("username")
 	if username == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"reason": ErrUnsupportedRequest.Error()})
@@ -19,10 +19,16 @@ func (h *Handler) userIdentity(c *gin.Context) {
 		return
 	}
 
+	_, err = h.service.Auth.CheckUserChargeAffiliation(userUUID)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"reason": service.ErrUserNotFound.Error()})
+		return
+	}
+
 	c.Set(userID, userUUID)
 }
 
-func (h *Handler) userAuthorisation(c *gin.Context) {
+func (h *Handler) userAuthorisationBids(c *gin.Context) {
 	username := c.Query("username")
 	if username == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"reason": ErrUnsupportedRequest.Error()})
@@ -34,42 +40,24 @@ func (h *Handler) userAuthorisation(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"reason": service.ErrUserNotFound.Error()})
 		return
 	}
+	_, err = h.service.Auth.CheckUserChargeAffiliation(userUUID)
 
-	tenderid := c.Param(tenderID)
-	if tenderid == "" {
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"reason": service.ErrUserNotFound.Error()})
+		return
+	}
+
+	bidid := c.Param(bidID)
+	if bidid == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"reason": ErrUnsupportedRequest.Error()})
 		return
 	}
 
-	userUUID, err = h.service.Auth.CheckUserCreatorTender(userUUID, tenderid)
+	userUUID, err = h.service.Auth.CheckUserCreatorBids(userUUID, bidid)
 	if err != nil {
-		c.JSON(http.StatusForbidden, gin.H{"reason": err.Error()})
+		c.JSON(http.StatusForbidden, gin.H{"reason": ErrForbiddenRequest.Error()})
 		return
 	}
 
 	c.Set(userID, userUUID)
-}
-
-func getUserId(c *gin.Context) (string, error) {
-	id, ok := c.Get(userID)
-	if !ok {
-		return "", service.ErrUserNotFound
-	}
-	idS, ok := id.(string)
-	if !ok {
-		return "", ErrUserIdInvalidType
-	}
-	return idS, nil
-}
-
-func getTenderId(c *gin.Context) (string, error) {
-	id, ok := c.Get(tenderID)
-	if !ok {
-		return "", service.ErrTenderNotFound
-	}
-	idS, ok := id.(string)
-	if !ok {
-		return "", ErrTenderIdInvalidType
-	}
-	return idS, nil
 }

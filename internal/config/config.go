@@ -23,9 +23,9 @@ type Postgres struct {
 	JDBCUrl    string `env:"POSTGRES_JDBC_URL"`
 	Username   string `env:"POSTGRES_USERNAME"`
 	Password   string `env:"POSTGRES_PASSWORD"`
-	Host       string `env:"POSTGRES_HOST" env-default:"localhost"`
-	Port       string `env:"POSTGRES_PORT" env-default:"5432"`
-	Database   string `env:"POSTGRES_DATABASE" env-default:"postgres"`
+	Host       string `env:"POSTGRES_HOST"`
+	Port       string `env:"POSTGRES_PORT"`
+	Database   string `env:"POSTGRES_DATABASE"`
 }
 
 func LoadConfig(loader bool) *Config {

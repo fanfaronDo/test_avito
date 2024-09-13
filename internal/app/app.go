@@ -28,6 +28,7 @@ func Run(cfg *config.Config) {
 		log.Printf("%v\n", err)
 		return
 	}
+
 	repos := repo.NewRepository(conn)
 	services := service.NewService(repos)
 	handler := handler.NewHandler(services)

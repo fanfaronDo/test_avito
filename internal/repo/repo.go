@@ -12,6 +12,7 @@ type Auth interface {
 	CheckUserID(userUUID string) (string, error)
 	CheckUserCreatorTender(userUUID, tenderUUID string) (string, error)
 	GetUserUUID(username string) (string, error)
+	CheckUserCreatorBidsByTenderId(userUUID, tenderUUID string) (string, error)
 }
 
 type Tender interface {
@@ -27,6 +28,8 @@ type Tender interface {
 
 type Bid interface {
 	CreateBids(tenderUUID, descr string, bid domain.Bid) (domain.Bid, error)
+	GetBids(limit, offset int, userUUID string) ([]domain.Bid, error)
+	GetBidsByTenderId(limit, offset int, tenderUUID string) ([]domain.Bid, error)
 }
 
 type Repository struct {

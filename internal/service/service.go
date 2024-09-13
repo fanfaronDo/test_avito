@@ -12,6 +12,7 @@ type Auth interface {
 	CheckUserChargeAffiliation(userUUID string) (string, error)
 	CheckUserCreatorBids(userUUID, bidsUUID string) (string, error)
 	CheckUserID(username string) (string, error)
+	CheckUserCreatorBidsByTenderId(userUUID, tenderUUID string) (string, error)
 }
 
 type Tender interface {
@@ -26,6 +27,8 @@ type Tender interface {
 
 type Bid interface {
 	CreateBid(bidCreator domain.BidCreator) (domain.Bid, error)
+	GetBids(limit, offset int, userUUID string) ([]domain.Bid, error)
+	GetBidsByTenderId(limit, offset int, tenderUUID string) ([]domain.Bid, error)
 }
 
 type Service struct {

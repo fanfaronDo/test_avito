@@ -49,6 +49,9 @@ func (t *TenderService) GetStatusTenderByTenderID(tenderID, userUUID string) (st
 }
 
 func (t *TenderService) UpdateStatusTender(tenderUUID, status, userUUID string) (domain.Tender, error) {
+	if checkStatus(status) {
+		return domain.Tender{}, ErrStatusError
+	}
 	return t.repo.UpdateStatusTenderById(tenderUUID, status, userUUID)
 }
 

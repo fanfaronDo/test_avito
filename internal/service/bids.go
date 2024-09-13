@@ -24,6 +24,14 @@ func (b *BidsService) CreateBid(bidCreator domain.BidCreator) (domain.Bid, error
 	return b.repo.Bid.CreateBids(bidCreator.TenderID, bidCreator.Description, bid)
 }
 
+func (b *BidsService) GetBids(limit, offset int, userUUID string) ([]domain.Bid, error) {
+	return b.repo.Bid.GetBids(limit, offset, userUUID)
+}
+
+func (b *BidsService) GetBidsByTenderId(limit, offset int, tenderUUID string) ([]domain.Bid, error) {
+	return b.repo.Bid.GetBidsByTenderId(limit, offset, tenderUUID)
+}
+
 func initBids(creator *domain.BidCreator) domain.Bid {
 	return domain.Bid{
 		Name:       creator.Name,

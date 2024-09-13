@@ -1,4 +1,4 @@
-FROM golang:1.22
+FROM golang:1.22.5
 
 RUN go version
 
@@ -7,8 +7,7 @@ WORKDIR ./app
 COPY ./ ./
 
 RUN apt-get update
-#RUN apt-get -y install postgresql-client
 
-RUN go mod download && go build -o app ./cmd/app/main.go
+RUN go get "github.com/lib/pq" && go mod download && go build -o app ./cmd/app/main.go
 
 CMD ["./app"]
