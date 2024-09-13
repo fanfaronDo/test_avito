@@ -44,6 +44,11 @@ func (h *Handler) InitRoutes() *gin.Engine {
 			editor.PATCH("/:tenderId/edit", h.editTender)
 			editor.PUT("/:tenderId/rollback/:version", h.rollbackTender)
 		}
+		
+		bids := api.Group("/bids")
+		{
+			bids.POST("/new", h.createBid)
+		}
 	}
 
 	return router

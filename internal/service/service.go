@@ -9,7 +9,9 @@ type Auth interface {
 	GetUserId(username string) (string, error)
 	CheckOrganizationAffiliation(userid, organisationid string) (string, error)
 	CheckUserCreatorTender(userUUID, tenderUUID string) (string, error)
-	//GetUserCharge(userid string) (string, error)
+	CheckUserChargeAffiliation(userUUID string) (string, error)
+	CheckUserCreatorBids(userUUID, bidsUUID string) (string, error)
+	CheckUserID(username string) (string, error)
 }
 
 type Tender interface {
@@ -22,14 +24,20 @@ type Tender interface {
 	RollbackTender(tenderUUID, userUUID string, version int) (domain.Tender, error)
 }
 
+type Bid interface {
+	CreateBid(bidCreator domain.BidCreator) (domain.Bid, error)
+}
+
 type Service struct {
 	Auth
 	Tender
+	Bid
 }
 
 func NewService(repo *repo.Repository) *Service {
 	return &Service{
 		NewAuthService(repo),
 		NewTenderService(repo),
+		NewBidService(repo),
 	}
 }

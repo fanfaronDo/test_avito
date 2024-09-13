@@ -18,10 +18,17 @@ func (a *AuthService) CheckOrganizationAffiliation(userid, organisationid string
 	return a.repo.Auth.CheckOrganizationAffiliation(userid, organisationid)
 }
 
-//func (a *AuthService) GetUserCharge(userid string) (string, error) {
-//	return a.repo.Auth.GetUserCharge(userid)
-//}
-
 func (a *AuthService) CheckUserCreatorTender(userUUID, tenderUUID string) (string, error) {
 	return a.repo.Auth.CheckUserCreatorTender(userUUID, tenderUUID)
+}
+
+func (a *AuthService) CheckUserChargeAffiliation(userUUID string) (string, error) {
+	return a.repo.Auth.CheckUserChargeAffiliation(userUUID)
+}
+
+func (a *AuthService) CheckUserCreatorBids(userUUID, bidsUUID string) (string, error) {
+	return a.repo.Auth.CheckUserCreatorBids(userUUID, bidsUUID)
+}
+func (a *AuthService) CheckUserID(username string) (string, error) {
+	return a.repo.Auth.CheckUserID(username)
 }

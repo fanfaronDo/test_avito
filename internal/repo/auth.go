@@ -29,18 +29,32 @@ func (a *AuthRepo) CheckOrganizationAffiliation(userid, organisationid string) (
 	return uuid, nil
 }
 
-//func (a *AuthRepo) GetUserCharge(userid string) (string, error) {
-//	var uuid string
-//	ctx, cancelFn := context.WithTimeout(context.Background(), timeuotCtx)
-//	defer cancelFn()
-//	query := `SELECT user_id FROM organization_responsible WHERE user_id = $1;`
-//	err := a.db.QueryRowContext(ctx, query, userid).Scan(&uuid)
-//	if err != nil {
-//		log.Debugf("%s: %v", ErrUserChargeNotFound, err)
-//		return "", ErrUserChargeNotFound
-//	}
-//	return uuid, nil
-//}
+func (a *AuthRepo) CheckUserChargeAffiliation(userUUID string) (string, error) {
+	var uuid string
+	ctx, cancelFn := context.WithTimeout(context.Background(), timeuotCtx)
+	defer cancelFn()
+	query := `SELECT user_id FROM organization_responsible WHERE user_id = $1;`
+	err := a.db.QueryRowContext(ctx, query, userUUID).Scan(&uuid)
+	if err != nil {
+		log.Debugf("%s: %v", ErrUserChargeNotAffiliationThisTender, err)
+		return "", ErrUserChargeNotAffiliationThisTender
+	}
+
+	return uuid, nil
+}
+
+func (a *AuthRepo) CheckUserID(userUUID string) (string, error) {
+	var uuid string
+	ctx, cancelFn := context.WithTimeout(context.Background(), timeuotCtx)
+	defer cancelFn()
+	query := `SELECT id FROM employee WHERE id = $1;`
+	err := a.db.QueryRowContext(ctx, query, userUUID).Scan(&uuid)
+	if err != nil {
+		return "", ErrUserNotFound
+	}
+
+	return uuid, nil
+}
 
 func (a *AuthRepo) CheckUserCreatorTender(userUUID, tenderUUID string) (string, error) {
 	var uuid string
@@ -51,6 +65,20 @@ func (a *AuthRepo) CheckUserCreatorTender(userUUID, tenderUUID string) (string, 
 	if err != nil {
 		log.Debugf("%s: %v", ErrUserNotCreator, err)
 		return "", ErrUserNotCreator
+	}
+
+	return uuid, nil
+}
+
+func (a *AuthRepo) CheckUserCreatorBids(userUUID, bidsUUID string) (string, error) {
+	var uuid string
+	ctx, cancelFn := context.WithTimeout(context.Background(), timeuotCtx)
+	defer cancelFn()
+	query := `SELECT author_id FROM bids WHERE author_id = $1 AND id = $2;`
+	err := a.db.QueryRowContext(ctx, query, userUUID, bidsUUID).Scan(&uuid)
+	if err != nil {
+		log.Debugf("%s: %v", ErrUserNotCreator, err)
+		return "", ErrUserNotFound
 	}
 
 	return uuid, nil
